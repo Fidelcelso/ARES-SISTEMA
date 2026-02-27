@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARES CORE</title>
+    <style>
+        body { background: #000; color: #00ff41; font-family: monospace; display: flex; flex-direction: column; height: 100vh; margin: 0; }
+        #chat { flex: 1; overflow-y: auto; padding: 20px; }
+        #input-box { display: flex; padding: 10px; border-top: 1px solid #00ff41; }
+        input { flex: 1; background: #000; color: #00ff41; border: 1px solid #00ff41; padding: 10px; }
+        button { background: #00ff41; color: #000; border: none; padding: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="chat"><b>ARES:</b> Sistema listo, Fidel.</div>
+    <div id="input-box">
+        <input type="text" id="userInput" placeholder="Escribe comando...">
+        <button onclick="enviar()">EJECUTAR</button>
+    </div>
+    <script>
+        async function enviar() {
+            const input = document.getElementById('userInput');
+            const chat = document.getElementById('chat');
+            const msg = input.value;
+            if(!msg) return;
+            chat.innerHTML += `<div><b>FIDEL:</b> ${msg}</div>`;
+            input.value = '';
+            const res = await fetch('/get_response', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: msg})
+            });
+            const data = await res.json();
+            chat.innerHTML += `<div><b>ARES:</b> ${data.response}</div>`;
+            if(data.redirect) window.location.href = data.redirect;
+            chat.scrollTop = chat.scrollHeight;
+        }
+    </script>
+</body>
+</html>
