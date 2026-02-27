@@ -1,32 +1,27 @@
 import os
-import google.generativeai as genai
 from flask import Flask, render_template, request, jsonify
+import google.generativeai as genai
 
 app = Flask(__name__)
 
-# CONFIGURACIÓN DEL CEREBRO
-genai.configure(api_key="AIzaSyDQozPZ_tZW59j3qffBX6ISmRSuvP_6Tpk")
-model = genai.GenerativeModel('gemini-1.5-flash')
+# Configuración de la IA (Usa variable de entorno o pega tu clave aquí si prefieres)
+genai.configure(api_key=os.environ.get("GOOGLE_API_KEY", "TU_API_KEY_AQUI"))
+model = genai.GenerativeModel('gemini-pro')
 
 @app.route('/')
-def home():
+def index():
     return render_template('index.html')
 
-@app.route('/get_response', methods=['POST'])
-def get_response():
-    data = request.get_json()
-    user_input = data.get('message', '')
+@app.route('/chat', methods=['POST'])
+def chat():
+    user_input = request.json.get("message")
     try:
-        response = model.generate_content(f"Eres ARES, IA táctica de Fidel. Responde directo: {user_input}")
-        
-        link = None
-        if "SPOTIFY" in response.text.upper():
-            link = "intent://open#Intent;scheme=spotify;package=com.spotify.music;end"
-            
-        return jsonify({"response": response.text, "redirect": link})
+        # Toque especial: Instrucción de personalidad para ARES
+        prompt = f"Actúa como ARES, un sistema de inteligencia artificial avanzado, lógico, leal a Fidel y con un toque de ingenio. Responde de forma concisa pero poderosa a: {user_input}"
+        response = model.generate_content(prompt)
+        return jsonify({"response": response.text})
     except Exception as e:
-        return jsonify({"response": f"Error: {str(e)}"}), 500
+        return jsonify({"response": f"Error en la Matriz: {str(e)}"})
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+if __name__ == '__main__':
+    app.run(debug=True)
